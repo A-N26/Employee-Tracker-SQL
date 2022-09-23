@@ -1,0 +1,31 @@
+{
+  "name": "employee-tracker",
+  "version": "1.0.0",
+  "description": "An Employee Tracking command-line database content management system (CMS) interface that is created using MySQL, NodeJS and Inquirer.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/A-N26/Employee-tracker-SQL.git"
+  },
+  "keywords": [
+    "CMS",
+    "MySQL",
+    "NodeJS",
+    "Inquirer",
+    "console.table"
+  ],
+  "author": "A-N26",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/A-N26/Employee-tracker-SQL/issues"
+  },
+  "homepage": "https://github.com/A-N26/Employee-tracker-SQL#readme",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "inquirer": "^8.2.4",
+    "mysql2": "^2.3.3"
+  }
+}
