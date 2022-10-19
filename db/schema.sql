@@ -1,14 +1,17 @@
-USE EmployeeTracker;
+DROP DATABASE IF EXISTS EmployeeTrackerAN_db;
+CREATE DATABASE EmployeeTrackerAN_db;
+USE EmployeeTrackerAN_db;
 
 -- ↓Table to hold department names
-CREATE TABLE departments (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(30) NOT NULL
+CREATE TABLE department (
+    id INT AUTO_INCREMENT,
+    name VARCHAR(30) NOT NULL,
+    PRIMARY KEY (id)
 );
 
 -- ↓Table to hold roles
-CREATE TABLE roles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE role (
+    id INT PRIMARY KEY AUTO_INCREMENT,
     -- title
     title VARCHAR(30) NOT NULL,
     -- salary
@@ -22,22 +25,21 @@ CREATE TABLE roles (
 );
 
 -- ↓Table to hold employees
-CREATE TABLE employees (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE employee (
+    id INT PRIMARY KEY AUTO_INCREMENT,
     -- employee name
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
     -- role_id
     role_id INT,
-    is_manager BOOLEAN NOT NULL,
     CONSTRAINT fk_role
     FOREIGN KEY (role_id)
-    REFERENCES roles(id)
+    REFERENCES role(id)
     ON DELETE CASCADE,
     -- manager_id
     manager_id INTEGER,
     CONSTRAINT fk_manager
     FOREIGN KEY (manager_id)
-    REFERENCES employees(id)
+    REFERENCES employee(id)
     ON DELETE SET NULL
 );
