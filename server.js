@@ -1,12 +1,13 @@
-// mysql connection
+// ↓Mysql connection
 const mysql = require('mysql2');
 require('console.table');
 require('dotenv').config();
+
 // Mysql connection using .env variables
 const connection = mysql.createConnection({
     host: 'localhost',
     // Replace port # with your port number.
-    port: process.env.DB_PORT || 8080,
+    port: process.env.PORT || 8080,
     // Replace user with your username in env variables file.
     user: process.env.DB_USER,
     // Replace password in env variables file with your password.
@@ -16,12 +17,13 @@ const connection = mysql.createConnection({
     database: process.env.DB_NAME,
 });
 
-////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// title screen
+// ↓title screen
 const inquirer = require('inquirer');
 const chalk = require('chalk');
 const figlet = require('figlet');
+
 // connection.connect()
 connection.connect(() => {
     console.log(chalk.blackBright.bold('==========================================================================================================================================='));
@@ -34,7 +36,7 @@ connection.connect(() => {
     OpeningPrompts();
 });
 
-////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // ↓Initial selection prompts.
 const OpeningPrompts = () => {
@@ -87,7 +89,7 @@ const OpeningPrompts = () => {
     });
 };
 
-////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // ↓To see employee info.
 viewEmployeeInfo = () => {
@@ -111,7 +113,9 @@ viewEmployeeInfo = () => {
         OpeningPrompts();
     });
 };
-////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // ↓Select department prompt.
 DptPrompt = (DptPromptChoices) => {
     inquirer.prompt(
@@ -167,7 +171,9 @@ ShowEmployeeByDpt = () => {
         DptPrompt (DptPromptChoices)
     });
 };
-////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // ↓Add employee prompt.
 rolePrompt = (rolePromptChoices) => {
     inquirer.prompt(
@@ -232,7 +238,9 @@ addNewName = () => {
         rolePrompt(rolePromptChoices)
     });
 };
-////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // ↓Delete employee prompt.
 deleteNamePrompt = (deleteNamePromptChoices) => {
     inquirer.prompt(
@@ -280,7 +288,9 @@ deleteName = () => {
         deleteNamePrompt(deleteNamePromptChoices);
     });
 };
-////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // ↓Update employee role prompt.
 employeeRoleUpdatePrompt = (updateRoleChoices, updateEmployeeRole) => {
     inquirer.prompt(
@@ -367,7 +377,9 @@ updateRoleList = (updateEmployeeRole) => {
         employeeRoleUpdatePrompt(updateRoleChoices, updateEmployeeRole);
     });
 };
-////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // ↓Add new Role prompt.
 newRolePrompt = (DptPromptChoices) => {
     inquirer.prompt(

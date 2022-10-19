@@ -1,4 +1,4 @@
-USE USE EmployeeTrackerAN_db;
+USE EmployeeTrackerAN_db;
 
 -- ↓Departments
 INSERT INTO department (id, name)
