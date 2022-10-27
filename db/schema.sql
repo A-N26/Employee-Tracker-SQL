@@ -2,44 +2,34 @@ DROP DATABASE IF EXISTS EmployeeTrackerAN_db;
 CREATE DATABASE EmployeeTrackerAN_db;
 USE EmployeeTrackerAN_db;
 
--- ↓Table to hold department names
+-- ↓Table to hold departments
 CREATE TABLE department (
-    id INT AUTO_INCREMENT,
-    name VARCHAR(30) NOT NULL,
+    id INT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(30) NULL,
     PRIMARY KEY (id)
 );
 
 -- ↓Table to hold roles
 CREATE TABLE role (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     -- title
-    title VARCHAR(30) NOT NULL,
+    title VARCHAR(30) NULL,
     -- salary
-    salary DECIMAL(10,1) NOT NULL,
+    salary DECIMAL(10,1) NULL,
     -- department_id
-    department_id INTEGER,
-    CONSTRAINT fk_department
-    FOREIGN KEY (department_id)
-    REFERENCES department(id)
-    ON DELETE CASCADE
+    department_id INTEGER NULL,
+    PRIMARY KEY (id)
 );
 
 -- ↓Table to hold employees
 CREATE TABLE employee (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     -- employee name
-    first_name VARCHAR(30) NOT NULL,
-    last_name VARCHAR(30) NOT NULL,
+    first_name VARCHAR(30) NULL,
+    last_name VARCHAR(30) NULL,
     -- role_id
-    role_id INT,
-    CONSTRAINT fk_role
-    FOREIGN KEY (role_id)
-    REFERENCES role(id)
-    ON DELETE CASCADE,
+    role_id INT NULL,
     -- manager_id
-    manager_id INTEGER,
-    CONSTRAINT fk_manager
-    FOREIGN KEY (manager_id)
-    REFERENCES employee(id)
-    ON DELETE SET NULL
+    manager_id INT NULL,
+    PRIMARY KEY (id)
 );

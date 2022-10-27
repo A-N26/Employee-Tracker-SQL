@@ -1,447 +1,618 @@
-// ↓Mysql connection
-const mysql = require('mysql2');
-require('console.table');
+const CTable = require('console.table');
 require('dotenv').config();
 
-// Mysql connection using .env variables
-const connection = mysql.createConnection({
-    host: 'localhost',
-    // Replace port # with your port number.
-    port: process.env.PORT || 8080,
-    // Replace user with your username in env variables file.
-    user: process.env.DB_USER,
-    // Replace password in env variables file with your password.
-    password: process.env.DB_PW,
-    // database created in schema.sql
-    // Replace name in env variables file with your db name.
-    database: process.env.DB_NAME,
-});
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ↓Module Imports
+const connection = require('./connection.js');
+const prompt = require('./prompts.js');
 
 // ↓title screen
 const inquirer = require('inquirer');
 const chalk = require('chalk');
 const figlet = require('figlet');
 
-// connection.connect()
-connection.connect(() => {
-    console.log(chalk.blackBright.bold('==========================================================================================================================================='));
-    console.log(``);
-    console.log(chalk.cyanBright.bold(figlet.textSync("EMPLOYEE TRACKER")));
-    console.log(``);
-    console.log(`` + chalk.yellowBright.bold('A CONTENT MANAGEMENT SYSTEM (CMS) database!'));
-    console.log(``);
-    console.log(chalk.blackBright.bold('==========================================================================================================================================='));
-    OpeningPrompts();
-});
+    // connection.connect()
+    connection.connect((err) => {
+        if (err) throw err;
+
+        console.log(chalk.magentaBright.bold('==========================================================================================================================================='));
+        console.log(``);
+        console.log(chalk.cyanBright.bold(figlet.textSync("EMPLOYEE TRACKER")));
+        console.log(``);
+        console.log(`                          ` + chalk.bgYellowBright.bold('A CONTENT MANAGEMENT SYSTEM (CMS) database'));
+        console.log(``);
+        console.log(chalk.magentaBright.bold('==========================================================================================================================================='));
+
+        TrackerPrompts();
+    });
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// ↓Initial selection prompts.
-const OpeningPrompts = () => {
-    inquirer.prompt(
-        {
-            type: 'list',
-            name: 'functions',
-            message: 'What would you like to do?',
-            choices:
-                [
-                'View Employees',
-                'Show employees by department',
-                'Add new employee',
-                'Remove employees',
-                'Update employee roles',
-                'Add role',
-                'Finish',
-                ],
-        },
-    )
-    .then(({ functions }) => {
-        switch (functions) {
-            case 'View employees':
-                viewEmployeeInfo();
-                break;
+// ↓Prompt functions
+const TrackerPrompts = () => {
+    inquirer.prompt(prompt.TrackerPrompts)
+        .then(({ functions }) => {
+            switch (functions) {
+                case 'View employees':
+                    viewEmployeeInfo();
+                    break;
 
-            case 'Show employees by department':
-                ShowEmployeeByDpt();
-                break;
+                case 'View employees by manager':
+                    ViewEmpByMgr();
+                    break;
 
-            case 'Add employees':
-                addNewName();
-                break;
+                case 'View departments':
+                    viewDptInfo();
+                    break;
 
-            case 'Remove employees':
-                deleteName();
-                break;
+                case "View department's budget":
+                    viewDptBudget();
+                    break;
 
-            case 'Update role':
-                updateRole();
-                break;
+                case 'View employees by department':
+                    ViewEmployeeByDpt();
+                    break;
 
-            case 'Add role':
-                newRole();
-                break;
+                case 'view roles':
+                    viewRoleInfo();
+                    break;
 
-            case 'Finish':
-                connection.end(console.log(chalk.redBright.bold(figlet.textSync('BYE!'))));
+            //////////////////////////////////////
+
+                case 'Add a new employee':
+                    addNewName();
+                    break;
+
+                case 'Add a new department':
+                    addNewDpt();
+                    break;
+
+                case 'Add a new role':
+                    addNewRole();
+                    break;
+
+            //////////////////////////////////////
+
+                case 'Update employee role':
+                    updateRole();
+                    break;
+
+                case 'Update employee manager':
+                    updateEmpMgr();
+                    break;
+
+            //////////////////////////////////////
+
+                case 'Remove employee':
+                    deleteName();
+                    break;
+
+                case 'Remove department':
+                    deleteDpt();
+                    break;
+
+                case 'Remove role':
+                    deleteRole();
+                    break;
+
+            //////////////////////////////////////
+
+                case 'Finish':
+                    console.log(chalk.bgGreenBright('task completed.'));
+
+                    connection.end(console.log(chalk.redBright.bold(figlet.textSync('Good BYE !'))));
+                    break;
             }
     });
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// ↓To see employee info.
-viewEmployeeInfo = () => {
-    console.log('Showing available employee Info\n...');
+// ↓To see list employee info.
 
-    var query = `
-        SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department, r.salary, join(m.first_name +, '', + m.last_name) AS manager
-        FROM employee e
-        LEFT JOIN role r
-        ON e.role_id = r.id
-        LEFT JOIN department d
-        ON d.id = r.department_id
-        LEFT JOIN employee m
-        ON m.id = e.manager_id`;
+const viewEmployeeInfo = () => {
+    console.log(chalk.blueBright('Showing available employee Info\n...'));
+
+    var query = `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department, r.salary, CONCAT(m.first_name, '', m.last_name) AS manager
+    FROM employee e
+    LEFT JOIN role r
+    ON e.role_id = r.id
+    LEFT JOIN department d
+    ON d.id = r.department_id
+    LEFT JOIN employee m
+    ON m.id = e.manager_id`;
 
     connection.query(query, (err, res) => {
         if (err) throw err;
-        console.table(res);
-        console.log('Showing available employee Info!\n');
 
-        OpeningPrompts();
+        console.table(res);
+        console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
+
+        TrackerPrompts();
     });
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// ↓Select department prompt.
-DptPrompt = (DptPromptChoices) => {
-    inquirer.prompt(
-        {
-            type: 'list',
-            name: 'DptID',
-            message: 'Please select a department.',
-            choices: DptPromptChoices
-        }
-    )
-    .then((answer) => {
-            console.log('answer', answer.dptId);
+// ↓To see list of employees by Manager.
 
-            var query = `
-                SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department
+const ViewEmpByMgr = () => {
+    console.log(chalk.blueBright('Showing a list of employees by manager\n...'));
+
+    var query = `SELECT e.manager_id, CONCAT(m.first_name, '', m.last_name) AS manager
+    FROM employee e
+    LEFT JOIN role r
+    ON e.role_id = r.id
+    LEFT JOIN department d
+    ON d.id = r.department_id
+    LEFT JOIN employee m
+    ON m.id = e.manager_id
+    GROUP BY e.manager_id`;
+
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+
+        const EmpMgr = res
+            .filter((mgr) => mgr.manager_id)
+            .map(({ manager_id, manager }) => ({
+                value: manager_id,
+                name: manager,
+            }));
+
+        inquirer.prompt(prompt.EmpByMgr(EmpMgr))
+            .then((answer) => {
+                console.log(answer);
+
+                var query = `SELECT e.id, e.first_name, e.last_name, r.title, CONCAT(m.first_name, '', m.last_name) AS manager
                 FROM employee e
                 JOIN role r
                 ON e.role_id = r.id
                 JOIN department d
                 ON d.id = r.department_id
-                WHERE d.id = ?`
+                LEFT JOIN employee m
+                ON m.id = e.manager_id
+                WHERE m.id = ? AND m.role_id = ?`;
 
-            connection.query(query, answer.dptID, (err, res) => {
-                if (err) throw err;
-                console.table('result', res);
-                console.log(res.Row + "employee name charting by departments done!\n");
-
-                OpeningPrompts();
-            })
-    })
-};
-// ↓To view employee info by department.
-ShowEmployeeByDpt = () => {
-    console.log('Viewing employee info by department!\n');
-
-    var query =`
-        SELECT d.id, d.name, r.salary AS budget
-        FROM employee e
-        LEFT JOIN role r
-        ON e.role_id = r.id
-        LEFT JOIN department d
-        ON d.id = r.department_id
-        GROUP BY d.id, d.name`
-
-    connection.query(query, (err, res) => {
-        if (err) throw err;
-        const DptPrompt = res.map(data => ({
-            value: data.id, name: data.name
-        }));
-        console.table(res);
-        console.log('Showing employee info by department!\n');
-
-        DptPrompt (DptPromptChoices)
-    });
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// ↓Add employee prompt.
-rolePrompt = (rolePromptChoices) => {
-    inquirer.prompt(
-        {
-            type: 'input',
-            name: 'Name',
-            message: 'Please enter an employee name.'
-        },
-        {
-            type: 'input',
-            name: 'SurName',
-            message: 'Please enter the surname of the employee.'
-        },
-        {
-            type: 'list',
-            name: 'roleId',
-            message: 'Please choose a role for the employee.',
-            choices: rolePromptChoices
-        },
-    )
-        .then((answer) => {
-            console.log(answer);
-
-            var query = `INSERT INTO employee SET ?`
-
-            connection.query(query,
-                {
-                    first_name: answer.first_name,
-                    last_name: answer.last_name,
-                    role_id: answer.roleId,
-                    manager_id: answer.managerId,
-                },
-                (err, res) => {
+                connection.query(query, answer.managerId, (err, res) => {
                     if (err) throw err;
 
                     console.table(res);
-                    console.log(res.newRow + 'successfully added.\n');
+                    console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
 
-                    OpeningPrompts();
-                }
-            )
-        });
-};
-// ↓To add an employee.
-addNewName = () => {
-    console.log('Adding employee...');
-
-    var query = `
-        SELECT r.id, r.title, r.salary
-        FROM role r`
-
-    connection.query(query, (err, res) => {
-        if (err) throw err;
-
-        const rolePromptChoices = res.map((id, title, salary) => ({
-            value: id, title: `${ title }`, salary: `${ salary }`
-        })
-        );
-        console.table(res);
-        console.log('Showing employee...\n');
-
-        rolePrompt(rolePromptChoices)
+                    TrackerPrompts();
+                });
+            });
     });
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// ↓Delete employee prompt.
-deleteNamePrompt = (deleteNamePromptChoices) => {
-    inquirer.prompt(
-        {
-            type: 'list',
-            name: 'employeeId',
-            messages: 'Please select a name to delete.',
-            choices: deleteNamePromptChoices
-        }
-    )
-        .then((answer) => {
-            console.log(answer)
-            var options = `DELETE FROM employee Where ?`;
+// ↓ To see department info.
 
-            connection.query(options, { id: answer.employeeId },
-                (err, res) => {
-                    if (err) throw err;
+const viewDptInfo = () => {
+    console.log(chalk.blueBright('Showing list of departments...\n'));
 
-                    console.table(res);
-                    console.log(res.Row + 'Removed\n');
-
-                    OpeningPrompts();
-                }
-            )
-        });
-};
-// ↓To remove/DELETE an employee.
-deleteName = () => {
-    console.log('Removing employee...');
-
-    var query = `
-        SELECT e.id, e.first_name, e.last_name
-        FROM employee e`
+    var query = 'SELECT * FROM department';
 
     connection.query(query, (err, res) => {
         if (err) throw err;
 
-        const deleteNamePromptChoices = res.map((id, first_name, last_name) => ({
-            value: id, name: `${ id } ${ first_name } ${ last_name }`
-        })
-        );
-        console.table(res);
-        console.log('Deleting employee info...\n');
+        console.log(chalk.blue(`\nDepartments:\n`));
 
-        deleteNamePrompt(deleteNamePromptChoices);
+        res.forEach((department) => {
+            console.log(chalk.blue(`ID: ${department.id} > ${department.name} Department`));
+        });
+
+        console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
+
+        TrackerPrompts();
     });
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// ↓Update employee role prompt.
-employeeRoleUpdatePrompt = (updateRoleChoices, updateEmployeeRole) => {
-    inquirer.prompt(
-        {
-            type: 'list',
-            name: 'employeeId',
-            message: 'Which employee would you like to update the role of?',
-            choices: updateEmployeeRole
-        },
-        {
-            type: 'list',
-            name: 'roleId',
-            message: 'Which role would you like to update?',
-            choices: updateRoleChoices
-        },
-    )
-        .then((answer) => {
-            console.log(answer);
+// ↓ To see department's budget.
 
-            var query = `
-            UPDATE employee SET role_id = ?
-            WHERE id = ?`
+const viewDptBudget = () => {
+    console.log(chalk.blueBright('Disclosing budget...\n'));
 
-            connection.query(query, [answer.roleId, answer.employeeId], (err, res) => {
-                if (err) throw err;
-
-                console.table(res);
-                console.log(res.Row + 'successfully updated.');
-
-                OpeningPrompts();
-            }
-            );
-        });
-};
-// ↓To UPDATE an employee role.
-updateRole = () => {
-    employeeList();
-};
-employeeList = () => {
-    console.log("Updating employee role");
-
-    var query = `
-        SELECT  e.id, e.first_name, e.last_name, r.title, d.name AS department, r.salary, join(m.first_name, + '', + m.last_name) AS manager
-        FROM employee e
-        JOIN role r
-        ON e.role_id = r.id
-        JOIN department d
-        ON d.id = r.department_id
-        JOIN employee m
-        ON m.id = e.manager_id`
-
-    connection.query(query, (err, res) => {
-        if (err) throw err;
-
-        const updateEmployeeRole = res.map((id, first_name, last_name) => ({
-            value: id, name: `${ first_name } ${ last_name }`
-        })
-        );
-        console.table(res);
-        console.log('New employee role update\n')
-
-        updateRoleList(updateEmployeeRole);
-    });
-};
-updateRoleList = (updateEmployeeRole) => {
-    console.log('Updating role...');
-
-    var query = `
-    SELECT r.id, r.title, r.salary
-    FROM role r`
-
-    let updateRoleChoices;
-
-    connection.query(query, (err, res) => {
-        if (err) throw err;
-
-        updateRoleChoices = res.map((id, title, salary) => ({
-            value: id, title: `${ title }`, salary: `${ salary }`
-        })
-        );
-        console.table(res);
-        console.log('Role update\n')
-
-        employeeRoleUpdatePrompt(updateRoleChoices, updateEmployeeRole);
-    });
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// ↓Add new Role prompt.
-newRolePrompt = (DptPromptChoices) => {
-    inquirer.prompt(
-        {
-            type: 'input',
-            name: 'RoleName',
-            message: 'What role would you like to add?',
-        },
-        {
-            type: 'input',
-            name: 'SalaryAmount',
-            message: 'What is the salary of the new role?'
-        },
-        {
-            type: 'list',
-            name: 'Dpt name',
-            message: 'Which department would you like to add the new role to?',
-            choices: DptPromptChoices
-        },
-    )
-        .then(answer => {
-            var query = ` INSERT INTO role SET ?`
-
-            connection.query(query, {
-                title: answer.title,
-                salary: answer.salary,
-                department_id: answer.departmentId
-            },
-                (err, res) => {
-                    if (err) throw err;
-                    console.table(res);
-                    console.log('New role added.');
-
-                    openingPrompts();
-                }
-            );
-        });
-};
-// ↓To add a new role (CREATE: INSERT INTO)
-newRole = () => {
-    console.log('Creating role...');
-
-    var query = `
-    SELECT d.id, d.name, r.salary AS
-    budget
+    var query = `SELECT d.name, r.salary, sum(r.salary) AS budget
     FROM employee e
-    JOIN role r
-    ON e.role_id = r.id
-    JOIN department d
-    ON d.id = r.department_id
-    GROUP BY d.id, d.name`
+    LEFT JOIN role r ON e.role_id = r.id
+    LEFT JOIN department d
+    ON r.department_id = d.id
+    GROUP BY d.name`;
 
     connection.query(query, (err, res) => {
         if (err) throw err;
 
-        const DptPromptChoices = res.map((id, name) => ({
-            value: id, name: `${ id } ${ name }`,
-        })
-        );
-        console.table(res);
-        console.log('');
+        console.log(chalk.blue(`\nDepartment Budgets:\n`));
 
-        newRolePrompt(DptPromptChoices);
+        res.forEach((department) => {
+            console.log(chalk.blue(`Department: ${department.name}\n > Budget: ${department.budget}\n`));
+        });
+
+        console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
+
+        TrackerPrompts();
     });
 };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ↓To see list of employees by department.
+
+const ViewEmployeeByDpt = () => {
+    console.log(chalk.blueBright('Showing a list  employees by department\n...'));
+
+    var query = `SELECT d.id, d.name
+    FROM employee e
+    LEFT JOIN role r
+    ON e.role_id = r.id
+    LEFT JOIN department d
+    ON d.id = r.department_id
+    GROUP BY d.id, d.name`;
+
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+
+        const EmpDpt = res
+            .map((data) => ({
+            value: data.id,
+            name: data.name,
+            }));
+
+        inquirer.prompt(prompt.EmpByDpt(EmpDpt))
+            .then((answer) => {
+                console.log(answer);
+
+                var query = `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department
+                FROM employee e
+                JOIN role r
+                ON e.role_id = r.id
+                JOIN department d
+                ON d.id = r.department_id
+                WHERE d.id =?`;
+
+                connection.query(query, answer.departmentId, (err, res) => {
+                    if (err) throw err;
+
+                    console.table(res);
+                    console.log(chalk.bgBlueBright('Please select a new prompt!\n'));
+
+                    TrackerPrompts();
+                });
+            })
+    });
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ↓ To see role info.
+
+const viewRoleInfo = () => {
+    console.log(chalk.blueBright('Listing all roles...\n'));
+
+    var query = 'SELECT * FROM role';
+
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+
+        console.log(chalk.blue(`\nRoles:\n`));
+
+        res.forEach((role) => {
+            console.log(chalk.blue(`id: ${role.id} > title: ${role.title}\n salary: ${role.salary}\n`));
+        });
+
+        console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
+
+        TrackerPrompts();
+    });
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ↓To add a new employee.
+
+const addNewName = () => {
+    console.log(chalk.blueBright('Adding a new employee\n...'));
+
+    // Employee's department
+    let DptList = [];
+
+    connection.query(`SELECT * FROM department`, (err, res) => {
+        if (err) throw err;
+
+        res.forEach((detail) => {
+            DptList.push(`${ detail.id } | ${ detail.name }`);
+        });
+        // Employee's role
+        let RoleList = [];
+
+        connection.query(`SELECT id, title FROM role`, (err, res) => {
+            if (err) throw err;
+
+            res.forEach((detail) => {
+                RoleList.push(`${ detail.id } | ${ detail.title }`);
+            });
+            // Employee's manager
+            let MgrList = [];
+
+            connection.query(`SELECT id, first_name, last_name FROM employee`, (err, res) => {
+                    if (err) throw err;
+
+                    res.forEach((detail) => {
+                    ManagerList.push(`${ detail.id } | ${ detail.first_name } | ${ detail.last_name }`);
+                    });
+                    // Employee's info
+                    inquirer.prompt(prompt.NewEmployee(DptList, RoleList, MgrList))
+                        .then((answer) => {
+                            let roleNum = parseInt(answer.role);
+                            let managerNum = parseInt(answer.manager);
+
+                            connection.query(`INSERT INTO employee SET ?`,
+                            {
+                                first_name: answer.first_name,
+                                last_name: answer.last_name,
+                                role_id: roleNum,
+                                manager_id: managerNum
+                            },
+
+                            (err, res) => {
+                                if (err) throw err;
+
+                                console.log('\n' + res.affectedRows + 'employee info logged');
+
+                                console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
+
+                                TrackerPrompts();
+                            },
+                        );
+                    });
+                },
+            );
+        });
+    });
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ↓To add a new department.
+
+const addNewDpt = () => {
+    console.log(chalk.blueBright('Adding a new department\n...'));
+
+    inquirer.prompt(prompt.NewDpt())
+        .then((answer) => {
+            var query = `INSERT INTO department(name) VALUES (?)`;
+
+            connection.query(query, (err, res) => {
+                if (err) throw err;
+
+                console.log(`New department added: ${answer.department.toUpperCase()}`);
+            });
+            console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
+
+            TrackerPrompts();
+        });
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ↓To add a new role.
+
+const addNewRole = () => {
+    console.log(chalk.blueBright('Adding a new role\n...'));
+
+    var query = `SELECT * FROM department`;
+
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+
+        const EmpDpt = res.map(({ id, name }) => ({
+            value: id,
+            name: `${id} | ${name}`,
+        }));
+
+        inquirer.prompt(prompt.NewRole(EmpDpt))
+            .then((answer) => {
+                var query = `INSERT INTO role SET ?`;
+
+                connection.query(query,
+                    {
+                        title: answer.roleName,
+                        Salary: answer.rolePay,
+                        department_id: answer.departmentId,
+                    },
+                    (err, res) => {
+                        if (err) throw err;
+
+                        console.log('\n' + res.affectedRows + 'New role created.');
+
+                        console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
+
+                        TrackerPrompts();
+                    },
+                );
+            });
+    });
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ↓To update employee role.
+
+const updateRole = () => {
+    console.log(chalk.blueBright('Updating role(s)\n...'));
+    let RoleUp = [];
+    connection.query(`SELECT id, first_name, last_name FROM employee`, (err, res) => {
+        if (err) throw err;
+
+        res.forEach((detail) => {
+            RoleUp.push(`${ detail.id } | ${ detail.first_name } | ${ detail.last_name }`);
+        });
+        let Position = [];
+        connection.query(`SELECT id, title FROM role`, (err, res) => {
+            if (err) throw err;
+
+            res.forEach((detail) => {
+                Position.push(`${detail.id} | ${ detail.title }`);
+            });
+
+            inquirer.prompt(prompt.EmpRoleUp(RoleUp, Position))
+                .then((answer) => {
+                    let idNum = parseInt(answer.role_update);
+                    let roleNum = parseInt(answer.job_position);
+
+                    connection.query(`UPDATE employee SET role_id = ${roleNum} WHERE id = ${idNum}`, (err, res) => {
+                            if (err) throw err;
+
+                            console.log('\n') + res.affectedRows + 'Update successful.';
+
+                            console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
+
+                            TrackerPrompts();
+                        }
+                    );
+                });
+        });
+    });
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ↓To update employee manager.
+
+const updateEmpMgr = () => {
+    console.log(chalk.blueBright('Updating employee manager(s)\n...'));
+    let EmpMgr = [];
+
+    connection.query(`SELECT id, first_name, last_name FROM employee`,
+        (err, res) => {
+            res.forEach((detail) => {
+                EmpMgr.push(`${ detail.id } | ${ detail.first_name} | ${ detail.last_name }`);
+            });
+
+            inquirer.prompt(prompt.EmpMgrUp(EmpMgr))
+                .then((answer) => {
+                    let idNum = parseInt(answer.update);
+                    let managerNum = parseInt(answer.manager);
+
+                    connection.query(`UPDATE employee SET manager_id = ${ managerNum } WHERE id = ${ idNum }`, (err, res) => {
+                        if (err) throw err;
+
+                        console.log('\n') + res.affectedRows + 'Update successful.';
+
+                        console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
+
+                        TrackerPrompts();
+                    },
+                );
+            });
+        },
+    );
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ↓To remove employee.
+
+const deleteName = () => {
+    console.log(chalk.blueBright('Deleting Employee(s)\n...'));
+
+    var query = `SELECT e.id, e.first_name, e.last_name FROM employee e`;
+
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+
+        const RemoveEmp = res.map(({
+            id, first_name, last_name }) => ({
+            value: id,
+            name: `${id} | ${first_name} | ${last_name}`,
+        }));
+
+        inquirer.prompt(prompt.EmpDelete(RemoveEmp))
+            .then((answer) => {
+                var query = `DELETE FROM employee WHERE ?`;
+
+                connection.query(query, { Id: answer.employeeId},(err, res) => {
+                    if (err) throw err;
+
+                    console.log('\n') + res.affectedRows + 'Employee deleted.';
+
+                    console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
+
+                    TrackerPrompts();
+                });
+            });
+    });
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ↓To remove department.
+
+const deleteDpt = () => {
+    console.log(chalk.blueBright('Deleting department(s)\n...'));
+
+    var query = `SELECT e.id, e.name FROM department e`;
+
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+
+        const RemoveDpt = res.map(({ id, name }) => ({
+            value: id,
+            name: `${id} | ${name}`,
+        }));
+
+        inquirer.prompt(prompt.DptDelete(RemoveDpt))
+            .then((answer) => {
+                var query = `DELETE FROM department WHERE ?`;
+
+                connection.query(query, { id: answer.departmentId }, (err, res) => {
+                    if (err) throw err;
+
+                    console.log('\n') + res.affectedRows + 'department deleted.';
+
+                    console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
+
+                    TrackerPrompts();
+                });
+            });
+    });
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ↓To remove role.
+
+const deleteRole = () => {
+    console.log(chalk.blueBright('Deleting role(s)\n...'));
+
+    var query = `SELECT e.id, e.title, e.salary, e.department_id FROM role e`;
+
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+
+        const RemoveRole = res.map(({ id, title }) => ({
+            value: id,
+            name: `${id} | ${title}`,
+        }));
+
+        inquirer.prompt(prompt.RoleDelete(RemoveRole))
+            .then((answer) => {
+                var query = `DELETE FROM role WHERE ?`;
+
+                connection.query(query, { id: answer.roleId }, (err, res) => {
+                    if (err) throw err;
+
+                    console.log('\n') + res.affectedRows + 'role removed.';
+
+                    console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
+
+                    TrackerPrompts();
+                });
+            });
+    });
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
