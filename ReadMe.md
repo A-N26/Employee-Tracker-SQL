@@ -17,10 +17,10 @@ Javascript, Node.js, Inquirer, Sequelize, MySQL database
 ## _Table of Contents📖_
 
 - [Installation](#Installation)💾
-- [Usage](#Usage)🖥️
+- [Usage](#Usage)🖥
 - [Links](#Links)📎
 - [Credits](#Credits)💳
-- [Licence](#Licence)🪪
+- [Licence](#License)🪪
 - [Badges](#Badges)🦡
 - [Questions](#Questions)❓
 - [Contribution](#Contribution)➕
@@ -34,7 +34,7 @@ Javascript, Node.js, Inquirer, Sequelize, MySQL database
 
 - In terminal - `npm i`. `mysql -u root -p` > login with password > `source db/schema.sql;`, `source db/seeds.sql;` & `use (database name);`. To verify the data is populated > `show tables;`(or/and)`select * from (table name);` > and finally, `\q` to exit mysql.
 
-## _Usage🖥️_
+## _Usage🖥_
 
 In terminal type `node server.js` and choose/answer prompts as desired.
 
