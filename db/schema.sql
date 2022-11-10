@@ -1,6 +1,6 @@
-DROP DATABASE IF EXISTS EmployeeTrackerAN_db;
-CREATE DATABASE EmployeeTrackerAN_db;
-USE EmployeeTrackerAN_db;
+DROP DATABASE IF EXISTS EmployeeTracker_AN_db;
+CREATE DATABASE EmployeeTracker_AN_db;
+USE EmployeeTracker_AN_db;
 
 -- ↓Table to hold departments
 CREATE TABLE department (

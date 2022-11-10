@@ -44,7 +44,7 @@ const TrackerPrompts = () => {
                     viewDptInfo();
                     break;
 
-                case "View department's budget":
+                case "View departments budget":
                     viewDptBudget();
                     break;
 
@@ -52,7 +52,7 @@ const TrackerPrompts = () => {
                     ViewEmployeeByDpt();
                     break;
 
-                case 'view roles':
+                case 'View roles':
                     viewRoleInfo();
                     break;
 
@@ -112,7 +112,7 @@ const TrackerPrompts = () => {
 const viewEmployeeInfo = () => {
     console.log(chalk.blueBright('Showing available employee Info\n...'));
 
-    var query = `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department, r.salary, CONCAT(m.first_name, '', m.last_name) AS manager
+    var query = `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
     FROM employee e
     LEFT JOIN role r
     ON e.role_id = r.id
@@ -138,7 +138,7 @@ const viewEmployeeInfo = () => {
 const ViewEmpByMgr = () => {
     console.log(chalk.blueBright('Showing a list of employees by manager\n...'));
 
-    var query = `SELECT e.manager_id, CONCAT(m.first_name, '', m.last_name) AS manager
+    var query = `SELECT e.manager_id, CONCAT(m.first_name, ' ', m.last_name) AS manager
     FROM employee e
     LEFT JOIN role r
     ON e.role_id = r.id
@@ -162,15 +162,7 @@ const ViewEmpByMgr = () => {
             .then((answer) => {
                 console.log(answer);
 
-                var query = `SELECT e.id, e.first_name, e.last_name, r.title, CONCAT(m.first_name, '', m.last_name) AS manager
-                FROM employee e
-                JOIN role r
-                ON e.role_id = r.id
-                JOIN department d
-                ON d.id = r.department_id
-                LEFT JOIN employee m
-                ON m.id = e.manager_id
-                WHERE m.id = ? AND m.role_id = ?`;
+                var query = `SELECT * FROM employee ORDER BY manager_id DESC`;
 
                 connection.query(query, answer.managerId, (err, res) => {
                     if (err) throw err;
@@ -213,30 +205,25 @@ const viewDptInfo = () => {
 // ↓ To see department's budget.
 
 const viewDptBudget = () => {
-    console.log(chalk.blueBright('Disclosing budget...\n'));
+    console.log(chalk.blueBright('Disclosing budget by department...\n'));
 
-    var query = `SELECT d.name, r.salary, sum(r.salary) AS budget
-    FROM employee e
-    LEFT JOIN role r ON e.role_id = r.id
-    LEFT JOIN department d
-    ON r.department_id = d.id
-    GROUP BY d.name`;
+    var query =
+        `SELECT title, salary FROM role;`;
 
     connection.query(query, (err, res) => {
         if (err) throw err;
 
         console.log(chalk.blue(`\nDepartment Budgets:\n`));
 
-        res.forEach((department) => {
-            console.log(chalk.blue(`Department: ${department.name}\n > Budget: ${department.budget}\n`));
+        res.forEach((role) => {
+            console.log(chalk.blue(`${role.title} | Salary: ${ role.salary }\n`));
         });
 
         console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
 
         TrackerPrompts();
     });
-};
-
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // ↓To see list of employees by department.
@@ -292,7 +279,13 @@ const ViewEmployeeByDpt = () => {
 const viewRoleInfo = () => {
     console.log(chalk.blueBright('Listing all roles...\n'));
 
-    var query = 'SELECT * FROM role';
+    var query =
+        // `SELECT * FROM role`;
+
+        `SELECT r.id, r.title, d.name department, r.salary
+        FROM role r
+        JOIN department d
+        ON r.department_id = d.id`;
 
     connection.query(query, (err, res) => {
         if (err) throw err;
@@ -335,7 +328,7 @@ const addNewName = () => {
                 RoleList.push(`${ detail.id } | ${ detail.title }`);
             });
             // Employee's manager
-            let MgrList = [];
+            let ManagerList = [];
 
             connection.query(`SELECT id, first_name, last_name FROM employee`, (err, res) => {
                     if (err) throw err;
@@ -344,7 +337,7 @@ const addNewName = () => {
                     ManagerList.push(`${ detail.id } | ${ detail.first_name } | ${ detail.last_name }`);
                     });
                     // Employee's info
-                    inquirer.prompt(prompt.NewEmployee(DptList, RoleList, MgrList))
+                    inquirer.prompt(prompt.NewEmployee(DptList, RoleList, ManagerList))
                         .then((answer) => {
                             let roleNum = parseInt(answer.role);
                             let managerNum = parseInt(answer.manager);
