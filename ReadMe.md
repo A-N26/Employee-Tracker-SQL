@@ -46,7 +46,7 @@ In terminal type `node server.js` and choose/answer prompts as desired.
 
 - <https://github.com/A-N26/Employee-tracker-SQL.git>
 
-- <No deployed link available for this one.>
+- No deployed link available for this one.
 
 </details>
 
