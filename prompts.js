@@ -49,40 +49,26 @@ module.exports = {
     ],
 
     // Add a new employee.
-    NewEmployee: (DptList, RoleList, MgrList) => [
+    NewEmployee: (RoleList) => [
         // Employee's first_name
         {
-            name: 'FirstName',
+            name: 'first_name',
             type: 'input',
             message: 'Please enter the first name of the employee.',
         },
         // Employee's last_name
         {
-            name: 'LastName',
+            name: 'last_name',
             type: 'input',
             message: 'Please enter the sur name of the employee.',
         },
-        // Employee's department
-        {
-            name: 'department',
-            type: 'list',
-            message: 'What department would you like to assigned the employee to?',
-            choices: DptList,
-        },
         // Employee's role
         {
-            name: 'role',
+            name: 'role_id',
             type: 'list',
             message: 'What role would you like to assigned the employee to?',
             choices: RoleList,
         },
-        // Employee's manager
-        {
-            name: 'department',
-            type: 'list',
-            message: 'Please assign a manager to this employee.',
-            choices: MgrList
-        }
     ],
 
     // Add a new department.

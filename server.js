@@ -208,7 +208,7 @@ const viewDptBudget = () => {
     console.log(chalk.blueBright('Disclosing budget by department...\n'));
 
     var query =
-        `SELECT title, salary FROM role;`;
+        `SELECT department_id, role.salary FROM role`;
 
     connection.query(query, (err, res) => {
         if (err) throw err;
@@ -216,7 +216,7 @@ const viewDptBudget = () => {
         console.log(chalk.blue(`\nDepartment Budgets:\n`));
 
         res.forEach((role) => {
-            console.log(chalk.blue(`${role.title} | Salary: ${ role.salary }\n`));
+            console.log(chalk.blue(`${role.department_id} | Salary: ${ role.salary }\n`));
         });
 
         console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
@@ -309,62 +309,36 @@ const viewRoleInfo = () => {
 const addNewName = () => {
     console.log(chalk.blueBright('Adding a new employee\n...'));
 
-    // Employee's department
-    let DptList = [];
+    // Employee's role
+    let RoleList = [];
 
-    connection.query(`SELECT * FROM department`, (err, res) => {
+    connection.query(`SELECT * FROM role`, (err, res) => {
         if (err) throw err;
 
-        res.forEach((detail) => {
-            DptList.push(`${ detail.id } | ${ detail.name }`);
+        res.forEach((role) => {
+            RoleList.push(`${ role.id } | ${ role.title }`);
         });
-        // Employee's role
-        let RoleList = [];
+        // Employee's info
+        inquirer.prompt(prompt.NewEmployee(RoleList))
+            .then((answer) => {
+                const query = `INSERT INTO employee (first_name, last_name, role_id) VALUES (?, ?, ?)`;
 
-        connection.query(`SELECT id, title FROM role`, (err, res) => {
-            if (err) throw err;
+                const answers = [ answer.first_name, answer.last_name, answer.role_id ];
 
-            res.forEach((detail) => {
-                RoleList.push(`${ detail.id } | ${ detail.title }`);
+                connection.query(query, answers,
+                    (err, res) => {
+                        if (err) throw err;
+
+                        console.log('\n' + res.affectedRows + 'employee info logged');
+
+                        console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
+
+                        TrackerPrompts();
+                    },
+                );
             });
-            // Employee's manager
-            let ManagerList = [];
-
-            connection.query(`SELECT id, first_name, last_name FROM employee`, (err, res) => {
-                    if (err) throw err;
-
-                    res.forEach((detail) => {
-                    ManagerList.push(`${ detail.id } | ${ detail.first_name } | ${ detail.last_name }`);
-                    });
-                    // Employee's info
-                    inquirer.prompt(prompt.NewEmployee(DptList, RoleList, ManagerList))
-                        .then((answer) => {
-                            let roleNum = parseInt(answer.role);
-                            let managerNum = parseInt(answer.manager);
-
-                            connection.query(`INSERT INTO employee SET ?`,
-                            {
-                                first_name: answer.first_name,
-                                last_name: answer.last_name,
-                                role_id: roleNum,
-                                manager_id: managerNum
-                            },
-
-                            (err, res) => {
-                                if (err) throw err;
-
-                                console.log('\n' + res.affectedRows + 'employee info logged');
-
-                                console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
-
-                                TrackerPrompts();
-                            },
-                        );
-                    });
-                },
-            );
-        });
     });
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -376,9 +350,9 @@ const addNewDpt = () => {
 
     inquirer.prompt(prompt.NewDpt())
         .then((answer) => {
-            var query = `INSERT INTO department(name) VALUES (?)`;
+            var query = `INSERT INTO department (name) VALUES (?)`;
 
-            connection.query(query, (err, res) => {
+            connection.query(query, [answer.department], (err, res) => {
                 if (err) throw err;
 
                 console.log(`New department added: ${answer.department.toUpperCase()}`);
@@ -408,7 +382,7 @@ const addNewRole = () => {
 
         inquirer.prompt(prompt.NewRole(EmpDpt))
             .then((answer) => {
-                var query = `INSERT INTO role SET ?`;
+                var query = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
 
                 connection.query(query,
                     {
@@ -419,7 +393,7 @@ const addNewRole = () => {
                     (err, res) => {
                         if (err) throw err;
 
-                        console.log('\n' + res.affectedRows + 'New role created.');
+                        console.log('\n' + res.affectedRows + ''+ 'New role created.');
 
                         console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
 

@@ -5,7 +5,7 @@ INSERT INTO department (id, name)
 VALUES
     (1, 'Manager'),
     (2, 'Assistant Manager'),
-    (3, 'Team Lead',
+    (3, 'Team Lead'),
     (4, 'Team Supervisor'),
     (5, 'Junior Team');
 
