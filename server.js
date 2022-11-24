@@ -231,13 +231,7 @@ const viewDptBudget = () => {
 const ViewEmployeeByDpt = () => {
     console.log(chalk.blueBright('Showing a list  employees by department\n...'));
 
-    var query = `SELECT d.id, d.name
-    FROM employee e
-    LEFT JOIN role r
-    ON e.role_id = r.id
-    LEFT JOIN department d
-    ON d.id = r.department_id
-    GROUP BY d.id, d.name`;
+    var query = `SELECT * FROM department`;
 
     connection.query(query, (err, res) => {
         if (err) throw err;
@@ -316,7 +310,7 @@ const addNewName = () => {
         if (err) throw err;
 
         res.forEach((role) => {
-            RoleList.push(`${ role.id } | ${ role.title }`);
+            RoleList.push(`${ role.id }`);
         });
         // Employee's info
         inquirer.prompt(prompt.NewEmployee(RoleList))
@@ -333,7 +327,7 @@ const addNewName = () => {
 
                         console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
 
-                        TrackerPrompts();
+                        viewEmployeeInfo();
                     },
                 );
             });
@@ -352,14 +346,14 @@ const addNewDpt = () => {
         .then((answer) => {
             var query = `INSERT INTO department (name) VALUES (?)`;
 
-            connection.query(query, [answer.department], (err, res) => {
+            connection.query(query, [answer.dptName], (err, res) => {
                 if (err) throw err;
 
-                console.log(`New department added: ${answer.department.toUpperCase()}`);
+                console.log(`New department added: ${answer.dptName.toUpperCase()}`);
             });
             console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
 
-            TrackerPrompts();
+            viewDptInfo();
         });
 };
 
@@ -382,12 +376,12 @@ const addNewRole = () => {
 
         inquirer.prompt(prompt.NewRole(EmpDpt))
             .then((answer) => {
-                var query = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
+                var query = `INSERT INTO role (title, salary, department_id) VALUES (?)`;
 
                 connection.query(query,
                     {
-                        title: answer.roleName,
-                        Salary: answer.rolePay,
+                        title: answer.roleTitle,
+                        Salary: answer.roleSalary,
                         department_id: answer.departmentId,
                     },
                     (err, res) => {
@@ -397,7 +391,7 @@ const addNewRole = () => {
 
                         console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
 
-                        TrackerPrompts();
+                        viewRoleInfo();
                     },
                 );
             });
@@ -542,7 +536,7 @@ const deleteDpt = () => {
 
                     console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
 
-                    TrackerPrompts();
+                    viewDptInfo();
                 });
             });
     });
@@ -576,7 +570,7 @@ const deleteRole = () => {
 
                     console.log(chalk.bgBlueBright('\nPlease select a new prompt!\n'));
 
-                    TrackerPrompts();
+                    viewRoleInfo();
                 });
             });
     });

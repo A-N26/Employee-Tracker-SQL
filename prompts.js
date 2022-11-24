@@ -74,7 +74,7 @@ module.exports = {
     // Add a new department.
     NewDpt: () => [
         {
-            name: 'department',
+            name: 'dptName',
             type: 'input',
             message: 'Please enter new department name'
         }
@@ -110,9 +110,9 @@ module.exports = {
         },
         {
             type: 'list',
-            name: 'Job_Position',
+            name: 'job_position',
             message: "Please choose the employee's job position.",
-            Choices: Position,
+            choices: Position,
         }
     ],
 
