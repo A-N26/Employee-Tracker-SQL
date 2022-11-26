@@ -371,19 +371,21 @@ const addNewRole = () => {
 
         const EmpDpt = res.map(({ id, name }) => ({
             value: id,
-            name: `${id} | ${name}`,
+            name: name,
         }));
+
+        // console.log("Emp Dept Data: " + EmpDpt);
 
         inquirer.prompt(prompt.NewRole(EmpDpt))
             .then((answer) => {
-                var query = `INSERT INTO role (title, salary, department_id) VALUES (?)`;
+                var query = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
 
                 connection.query(query,
-                    {
-                        title: answer.roleTitle,
-                        Salary: answer.roleSalary,
-                        department_id: answer.departmentId,
-                    },
+                    [
+                        answer.roleTitle,
+                        answer.roleSalary,
+                        parseInt(answer.departmentId),
+                    ],
                     (err, res) => {
                         if (err) throw err;
 
