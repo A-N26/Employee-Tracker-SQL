@@ -34,9 +34,17 @@ Javascript, Node.js, Inquirer, Sequelize, MySQL database
 
 - In terminal - `npm i`. `mysql -u root -p` > login with password > `source db/schema.sql;`, `source db/seeds.sql;` & `use (database name);`. To verify the data is populated > `show tables;`(or/and)`select * from (table name);` > and finally, `\q` to exit mysql.
 
+![MySQL_DB](./media/MySQL_DB.gif "Db seeding and verifying")
+
 ## _Usage🖥_
 
-In terminal type `node server.js` and choose/answer prompts as desired.
+In terminal type `node server.js` and choose/answer prompts as desired. A few initial prompts are shown in the images below as examples. Please watch the included walkthrough video for the rest (below the images...).
+![Emp](./media/sql_view1_Emp.jpg "view employees")
+![EbM](./media/sql_view2_EbM.jpg "view employees by manager")
+![Dpt](./media/sql_view3_Dpt.jpg "View departments and view departments budget")
+![roles](./media/sql_view4_roles.jpg "view roles")
+
+- > For a detailed look please watch this 7 min [walkthrough video](https://drive.google.com/file/d/1vjS4261f1Mw3nlz49aej7_PHurJfcN9g/view)
 
 ## _Links📎_
 
