@@ -38,7 +38,8 @@ Javascript, Node.js, Inquirer, Sequelize, MySQL database
 
 ## _Usage🖥_
 
-In terminal type `node server.js` and choose/answer prompts as desired. A few initial prompts are shown in the images below as examples. Please watch the included walkthrough video for the rest (below the images...).
+In terminal type `node server.js` and choose/answer prompts as desired. 
+* A few initial prompts are shown in the images below as examples. Please watch the included walkthrough video for the rest (below the images...).
 ![Emp](./media/sql_view1_Emp.jpg "view employees")
 ![EbM](./media/sql_view2_EbM.jpg "view employees by manager")
 ![Dpt](./media/sql_view3_Dpt.jpg "View departments and view departments budget")
